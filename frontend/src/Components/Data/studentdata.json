@@ -1,0 +1,8 @@
+[
+    { "id": 1, "name": "John Doe", "grade": "A", "attendance": "03000000000", "department": "Computer Science", "status": "Active" },
+    { "id": 2, "name": "Jane Smith", "grade": "B+", "attendance": "03000000001", "department": "Engineering", "status": "Active" },
+    { "id": 3, "name": "Mike Johnson", "grade": "A-", "attendance": "03000230001", "department": "Mathematics", "status": "Inactive" },
+    { "id": 4, "name": "Sarah Williams", "grade": "B", "attendance": "03003400001", "department": "Physics", "status": "Active" },
+    { "id": 5, "name": "Tom Brown", "grade": "A+", "attendance": "03000450001", "department": "Chemistry", "status": "Active" }
+  ]
+  
