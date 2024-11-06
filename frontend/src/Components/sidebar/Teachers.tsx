@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import DeleteConfirmationModal from "./Student/DeleteConfirmmationModal";
+import UpdateTeacher from "./Teacher/UpdateTeacher";
 
 interface Teacher {
   id: number | null;
@@ -20,63 +21,70 @@ const TeacherManagement: React.FC = () => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
   const [isAddingTeacher, setIsAddingTeacher] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newTeacher, setNewTeacher] = useState<Teacher>({
     id: null,
-    name: '',
-    email: '',
-    course: '',
-    charges: ''
+    name: "",
+    email: "",
+    course: "",
+    charges: "",
   });
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
-  // Fetch both teachers and courses on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setErrorMessage('');
+  const fetchData = async () => {
+    setLoading(true);
+    setErrorMessage("");
 
-      try {
-        // Fetch teachers
-        const teachersResponse = await fetch("http://localhost:5007/teacher/getteachers");
-        const coursesResponse = await fetch("http://localhost:5007/course/getcourse");
+    try {
+      const teachersResponse = await fetch(
+        "http://localhost:5007/teacher/getteachers"
+      );
+      const coursesResponse = await fetch(
+        "http://localhost:5007/course/getcourse"
+      );
 
-        if (!teachersResponse.ok || !coursesResponse.ok) {
-          throw new Error("Network response was not ok");
-        }
+      if (!teachersResponse.ok || !coursesResponse.ok) {
+        throw new Error("Network response was not ok");
+      }
 
-        const teachersData = await teachersResponse.json();
-        const coursesData = await coursesResponse.json();
+      const teachersData = await teachersResponse.json();
+      const coursesData = await coursesResponse.json();
 
-        const transformedTeachers = teachersData.teachers.map((teacher: any) => ({
+      const transformedTeachers = teachersData.teachers.map(
+        (teacher: any) => ({
           id: teacher._id,
           name: teacher.name,
           email: teacher.email,
-          course: teacher.course || '',
-          charges: teacher.charges || ''
-        }));
+          course: teacher.course || "",
+          charges: teacher.charges || "",
+        })
+      );
 
-        setTeachers(transformedTeachers);
-        setAvailableCourses(coursesData.courses || []);
-      } catch (error) {
-        setErrorMessage('Error fetching data. Please try again.');
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setTeachers(transformedTeachers);
+      setAvailableCourses(coursesData.courses || []);
+    } catch (error) {
+      setErrorMessage("Error fetching data. Please try again.");
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setNewTeacher((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -84,13 +92,13 @@ const TeacherManagement: React.FC = () => {
     const newErrors: { name?: string; email?: string } = {};
 
     if (!newTeacher.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
 
     if (!newTeacher.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(newTeacher.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
 
     setErrors(newErrors);
@@ -99,12 +107,14 @@ const TeacherManagement: React.FC = () => {
 
   const addTeacher = async () => {
     if (validateForm()) {
-      const isDuplicate = teachers.some((teacher) => teacher.email === newTeacher.email);
+      const isDuplicate = teachers.some(
+        (teacher) => teacher.email === newTeacher.email
+      );
 
       if (isDuplicate) {
         setErrors((prev) => ({
           ...prev,
-          email: 'A teacher with this email already exists'
+          email: "A teacher with this email already exists",
         }));
         return;
       }
@@ -115,18 +125,21 @@ const TeacherManagement: React.FC = () => {
       };
 
       setLoading(true);
-      setErrorMessage('');
+      setErrorMessage("");
       try {
-        const response = await fetch('http://localhost:5007/teacher/createteachers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(teacherToAdd),
-        });
+        const response = await fetch(
+          "http://localhost:5007/teacher/createteachers",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(teacherToAdd),
+          }
+        );
 
         if (!response.ok) {
-          throw new Error('Failed to add teacher');
+          throw new Error("Failed to add teacher");
         }
         const data = await response.json();
         const addedTeacher = data.teacher;
@@ -136,20 +149,31 @@ const TeacherManagement: React.FC = () => {
             id: addedTeacher.id,
             name: addedTeacher.name,
             email: addedTeacher.email,
-            course: addedTeacher.course || '',
+            course: addedTeacher.course || "",
             charges: addedTeacher.charges || 0,
           },
         ]);
-        setNewTeacher({ id: null, name: '', email: '', course: '', charges: '' });
+        setNewTeacher({
+          id: null,
+          name: "",
+          email: "",
+          course: "",
+          charges: "",
+        });
         setErrors({});
         setIsAddingTeacher(false);
       } catch (error) {
-        setErrorMessage('Failed to add teacher. Please try again.');
-        console.error('Error adding teacher:', error);
+        setErrorMessage("Failed to add teacher. Please try again.");
+        console.error("Error adding teacher:", error);
       } finally {
         setLoading(false);
       }
     }
+  };
+
+  const handleEditClick = (teacher: Teacher) => {
+    setSelectedTeacher(teacher);
+    setIsEditModalOpen(true);
   };
 
   const removeTeacher = (id: number) => {
@@ -160,23 +184,26 @@ const TeacherManagement: React.FC = () => {
   const confirmDelete = async (id: number) => {
     if (id) {
       try {
-        const response = await fetch(`http://localhost:5007/teacher/delteachers/${id}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `http://localhost:5007/teacher/delteachers/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (response.ok) {
-          setTeachers((prev) =>
-            prev.filter((teacher) => teacher.id !== id)
-          );
+          setTeachers((prev) => prev.filter((teacher) => teacher.id !== id));
         } else {
           const errorData = await response.json();
           setErrorMessage(errorData.message || "Failed to delete teacher.");
         }
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : "An unknown error occurred.");
+        setErrorMessage(
+          error instanceof Error ? error.message : "An unknown error occurred."
+        );
       }
     }
 
@@ -190,7 +217,7 @@ const TeacherManagement: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-800">Teachers</h2>
         <button
           onClick={() => setIsAddingTeacher(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
+          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-300"
         >
           + Add Teacher
         </button>
@@ -205,23 +232,34 @@ const TeacherManagement: React.FC = () => {
       ) : (
         <div className="divide-y divide-gray-200">
           {teachers.map((teacher) => (
-            <div key={teacher.id} className="flex justify-between items-center py-4">
+            <div
+              key={teacher.id}
+              className="flex justify-between items-center py-4"
+            >
               <div>
                 <p className="font-medium text-gray-800">{teacher.name}</p>
-                <p className="text-gray-600 text-sm">
-                  {teacher.email}
-                </p>
+                <p className="text-gray-600 text-sm">{teacher.email}</p>
                 <p className="text-gray-600 text-sm">
                   {teacher.course && ` ${teacher.course}`}
                 </p>
-                <p className="text-gray-600 text-sm">Charges: {teacher.charges}</p>
+                <p className="text-gray-600 text-sm">
+                  Charges: {teacher.charges}
+                </p>
               </div>
-              <button
-                onClick={() => removeTeacher(teacher.id!)}
-                className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition duration-300"
-              >
-                Remove
-              </button>
+              <div>
+                <button
+                  onClick={() => handleEditClick(teacher)}
+                  className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition duration-300 mr-2"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => removeTeacher(teacher.id!)}
+                  className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition duration-300"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -230,7 +268,9 @@ const TeacherManagement: React.FC = () => {
       {isAddingTeacher && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Add New Teacher</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              Add New Teacher
+            </h3>
 
             <div className="space-y-4">
               <div>
@@ -243,7 +283,9 @@ const TeacherManagement: React.FC = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                )}
               </div>
 
               <div>
@@ -256,7 +298,9 @@ const TeacherManagement: React.FC = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
 
               <div>
@@ -313,6 +357,18 @@ const TeacherManagement: React.FC = () => {
         onConfirm={() => confirmDelete(selectedTeacher?.id || 0)}
         studentName={selectedTeacher?.name || null}
       />
+
+      {selectedTeacher && (
+        <UpdateTeacher
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedTeacher(null);
+          }}
+          teacher={selectedTeacher}
+          fetchTeachers={fetchData}
+        />
+      )}
     </div>
   );
 };
