@@ -9,16 +9,16 @@ const HomePage = () => {
     courses: []
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);  // Explicitly set the type here
+  const [error, setError] = useState<string | null>(null);  
 
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
       try {
         const [teachersRes, studentsRes, coursesRes] = await Promise.all([
-          fetch('http://localhost:5005/teacher/getteachers'),
-          fetch('http://localhost:5005/student/getstudent'),
-          fetch('http://localhost:5005/course/getcourse')
+          fetch('http://localhost:5007/teacher/getteachers'),
+          fetch('http://localhost:5007/student/getstudent'),
+          fetch('http://localhost:5007/course/getcourse')
         ]);
 
         const teachersData = await teachersRes.json();
@@ -121,8 +121,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Course Distribution Chart */}
       <div className="bg-white rounded-lg shadow-md p-6 mt-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">
           Course Enrollment Distribution

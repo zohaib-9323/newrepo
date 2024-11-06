@@ -40,7 +40,7 @@ const StudentDashboard: React.FC = () => {
   const fetchStudents = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5005/student/getstudent"
+        "http://localhost:5007/student/getstudent"
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -94,7 +94,7 @@ const StudentDashboard: React.FC = () => {
     if (id) {
       try {
         const response = await fetch(
-          `http://localhost:5005/student/deletestudent/${id}`,  
+          `http://localhost:5007/student/deletestudent/${id}`,  
           {
             method: "DELETE",
             headers: {

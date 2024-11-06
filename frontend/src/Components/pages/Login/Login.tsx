@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 interface LoginPageProps {
   onLogin: (email: string, password: string) => Promise<void>;
   onSwitchToSignUp: () => void;
-  onSwitchToForgotPassword: () => void;  // New prop
+  onSwitchToForgotPassword: () => void; 
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ 
@@ -98,8 +98,6 @@ const LoginPage: React.FC<LoginPageProps> = ({
               Sign In
             </button>
           </div>
-
-          {/* Forgot Password and Sign Up Links */}
           <div className="mt-4 flex flex-col space-y-2 text-center">
             <button
               type="button"

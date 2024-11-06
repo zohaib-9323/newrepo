@@ -41,8 +41,8 @@ const TeacherManagement: React.FC = () => {
 
       try {
         // Fetch teachers
-        const teachersResponse = await fetch("http://localhost:5005/teacher/getteachers");
-        const coursesResponse = await fetch("http://localhost:5005/course/getcourse");
+        const teachersResponse = await fetch("http://localhost:5007/teacher/getteachers");
+        const coursesResponse = await fetch("http://localhost:5007/course/getcourse");
 
         if (!teachersResponse.ok || !coursesResponse.ok) {
           throw new Error("Network response was not ok");
@@ -117,7 +117,7 @@ const TeacherManagement: React.FC = () => {
       setLoading(true);
       setErrorMessage('');
       try {
-        const response = await fetch('http://localhost:5005/teacher/createteachers', {
+        const response = await fetch('http://localhost:5007/teacher/createteachers', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ const TeacherManagement: React.FC = () => {
   const confirmDelete = async (id: number) => {
     if (id) {
       try {
-        const response = await fetch(`http://localhost:5005/teacher/delteachers/${id}`, {
+        const response = await fetch(`http://localhost:5007/teacher/delteachers/${id}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",

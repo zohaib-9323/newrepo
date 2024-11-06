@@ -21,8 +21,6 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-
-  // Load user data from localStorage on initial mount
   useEffect(() => {
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
@@ -34,7 +32,7 @@ const App: React.FC = () => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      const response = await fetch("http://localhost:5005/auth/login", {
+      const response = await fetch("http://localhost:5007/auth/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,10 +47,10 @@ const App: React.FC = () => {
       const userData = await response.json();
       setIsLoggedIn(true);
       setCurrentUser(userData);
-      localStorage.setItem('currentUser', JSON.stringify(userData)); // Store user data
+      localStorage.setItem('currentUser', JSON.stringify(userData)); 
       setCurrentPage("dashboard");
     } catch (error) {
-      console.error(error); // Handle error appropriately
+      console.error(error); 
     }
   };
 
@@ -62,14 +60,14 @@ const App: React.FC = () => {
     setUsers(updatedUsers);
     setIsLoggedIn(true);
     setCurrentUser(newUser);
-    localStorage.setItem('currentUser', JSON.stringify(newUser)); // Store user data
+    localStorage.setItem('currentUser', JSON.stringify(newUser)); 
     setCurrentPage("dashboard");
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentUser(null);
-    localStorage.removeItem('currentUser'); // Clear user data from localStorage
+    localStorage.removeItem('currentUser'); 
     setCurrentPage("login");
   };
 
@@ -87,6 +85,7 @@ const App: React.FC = () => {
           <main className="flex-1 p-6 overflow-y-auto bg-gray-100">
             <Routes>
               <Route path="/" element={<HomePage />} />
+              <Route path="*" element={<HomePage />} />
               <Route path="/teachers" element={<TeacherManagement />} />
               <Route path="/students" element={<StudentDashboard />} />
               <Route path="/courses" element={<CoursesManagement />} />

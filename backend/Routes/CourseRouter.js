@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get('/getcourse', getAllCourses);
 router.post('/addcourse', createCourse);
-router.put('/updatecourse', updateCourse);
+router.put('/updatecourse/:id', updateCourse);
 router.delete('/deletecourse/:id', deleteCourse);
 
 module.exports = router;

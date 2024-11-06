@@ -30,13 +30,15 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]); // Store course names
 
   useEffect(() => {
     if (isOpen && student) {
       setEditStudent(student);
-      setSelectedCourses(student.courses.map(course => course.id));
+      setSelectedCourseNames(student.courses.map((course) => course.name) || []);
       fetchAvailableCourses();
+    } else {
+      setSelectedCourseNames([]);
     }
   }, [isOpen, student]);
 
@@ -61,9 +63,11 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   };
 
   const handleCourseToggle = (courseName: string) => {
-    setSelectedCourses(prev => {
-      if (prev.includes(courseName)) {
-        return prev.filter(course => course !== courseName);
+    setSelectedCourseNames(prev => {
+      const isSelected = prev.includes(courseName);
+      
+      if (isSelected) {
+        return prev.filter(name => name !== courseName);
       } else {
         if (prev.length >= 3) {
           alert('You can only select up to 3 courses');
@@ -78,7 +82,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
     if (!editStudent) return;
 
     const { Name, grade, Department, status } = editStudent;
-    if (!Name || !grade || !Department || selectedCourses.length === 0) {
+    if (!Name || !grade || !Department || selectedCourseNames.length === 0) {
       alert('Please fill in all required fields and select at least one course.');
       return;
     }
@@ -87,7 +91,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
       Name,
       grade,
       Department,
-      courses: selectedCourses,
+      courses: selectedCourseNames, // Send course names directly
       status,
     };
 
@@ -182,26 +186,31 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
               Available Courses (Select up to 3)
             </label>
             <div className="border rounded-lg p-4 space-y-2 max-h-48 overflow-y-auto">
-              {availableCourses.map((course) => (
-                <div key={course.id} className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    id={course.id}
-                    checked={selectedCourses.includes(course.name)}
-                    onChange={() => handleCourseToggle(course.name)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor={course.id} className="flex-1">
-                    <div className="text-sm font-medium">{course.name}</div>
-                    {/* <div className="text-xs text-gray-500">
-                      {course.institute} - ${course.price}
-                    </div> */}
-                  </label>
-                </div>
-              ))}
+              {availableCourses.map((course) => {
+                const isSelected = selectedCourseNames.includes(course.name);
+                return (
+                  <div 
+                    key={course.id} 
+                    className={`flex items-center space-x-3 p-2 rounded ${
+                      isSelected ? 'bg-blue-50' : ''
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      id={course.id}
+                      checked={isSelected}
+                      onChange={() => handleCourseToggle(course.name)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor={course.id} className="flex-1 cursor-pointer">
+                      <div className="text-sm font-medium">{course.name}</div>
+                    </label>
+                  </div>
+                );
+              })}
             </div>
             <div className="mt-2 text-sm text-gray-500">
-              Selected: {selectedCourses.length}/3
+              Selected: {selectedCourseNames.length}/3
             </div>
           </div>
 
@@ -225,6 +234,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
         </div>
       </div>
     </div>
+    
   );
 };
 
