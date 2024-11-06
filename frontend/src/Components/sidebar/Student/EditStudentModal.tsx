@@ -44,7 +44,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
 
   const fetchAvailableCourses = async () => {
     try {
-      const response = await fetch('http://localhost:5005/course/getcourse');
+      const response = await fetch('http://localhost:5007/course/getcourse');
       if (!response.ok) {
         throw new Error('Failed to fetch courses');
       }
@@ -97,7 +97,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5005/student/updatestudent/${editStudent.id}`, {
+      const response = await fetch(`http://localhost:5007/student/updatestudent/${editStudent.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
