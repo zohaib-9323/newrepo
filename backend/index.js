@@ -11,7 +11,10 @@ const TeacherRouter = require('./Routes/TeacherRouter');
 const app = express();
 const PORT = process.env.PORT || 5007;
 app.use(cors({
-  origin: ['http://localhost:5007', 'https://schoolmanagementsystem-mzohaib0677-gmailcoms-projects.vercel.app']
+  origin: ['http://localhost:5007', 'https://schoolmanagementsystem-mzohaib0677-gmailcoms-projects.vercel.app'],
+  credentials: true, // Enable cookies or authorization headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 }));
 app.use(express.json());
 app.use(bodyParser.json());
