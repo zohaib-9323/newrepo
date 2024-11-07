@@ -39,7 +39,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5007/auth/forgotpassword', {
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}auth/forgotpassword`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5007/auth/reset-password', {
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}auth/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

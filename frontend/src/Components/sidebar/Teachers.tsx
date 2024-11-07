@@ -41,10 +41,10 @@ const TeacherManagement: React.FC = () => {
 
     try {
       const teachersResponse = await fetch(
-        "http://localhost:5007/teacher/getteachers"
+        `${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`
       );
       const coursesResponse = await fetch(
-        "http://localhost:5007/course/getcourse"
+        `${process.env.REACT_APP_PUBLIC_URL}course/getcourse`
       );
 
       if (!teachersResponse.ok || !coursesResponse.ok) {
@@ -128,7 +128,7 @@ const TeacherManagement: React.FC = () => {
       setErrorMessage("");
       try {
         const response = await fetch(
-          "http://localhost:5007/teacher/createteachers",
+          `${process.env.REACT_APP_PUBLIC_URL}teacher/createteachers`,
           {
             method: "POST",
             headers: {
@@ -185,7 +185,7 @@ const TeacherManagement: React.FC = () => {
     if (id) {
       try {
         const response = await fetch(
-          `http://localhost:5007/teacher/delteachers/${id}`,
+          `${process.env.REACT_APP_PUBLIC_URL}teacher/delteachers/${id}`,
           {
             method: "DELETE",
             headers: {

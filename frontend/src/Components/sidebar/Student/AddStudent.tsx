@@ -43,7 +43,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
 
   const fetchAvailableCourses = async () => {
     try {
-      const response = await fetch('http://localhost:5007/course/getcourse');
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
       if (!response.ok) {
         throw new Error('Failed to fetch courses');
       }
@@ -125,7 +125,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
 
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5007/student/creatstudent', {
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}student/creatstudent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
