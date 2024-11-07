@@ -32,7 +32,8 @@ const App: React.FC = () => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      const BASE_URL=`${process.env.REACT_APP_PUBLIC_URL}auth/login`;
+      // const BASE_URL=`${process.env.REACT_APP_PUBLIC_URL}auth/login`;
+      const BASE_URL='http://localhost:5007/auth/login'
       const response = await fetch(BASE_URL, {
         method: 'POST',
         headers: {
