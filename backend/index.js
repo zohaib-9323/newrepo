@@ -10,12 +10,7 @@ const TeacherRouter = require('./Routes/TeacherRouter');
 
 const app = express();
 const PORT = process.env.PORT || 5007;
-app.use(cors({
-  origin: 'schoolmanagementsystem-omega.vercel.app/', // Replace with actual frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use('/auth',AuthRouter);
