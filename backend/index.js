@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5007;
 
 // Define CORS options
 const corsOptions = {
-  origin: process.env.CLIENT_URL || 'http://localhost:5007', // Allow only your frontend origin in production
+  origin: '*', // Allow only your frontend origin in production
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
   credentials: true, 
 };
