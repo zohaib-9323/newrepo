@@ -12,14 +12,8 @@ const app = express();
 const PORT = process.env.PORT || 5007;
 
 // Define CORS options
-const corsOptions = {
-  origin: '*', // Allow only your frontend origin in production
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
-  credentials: true, 
-};
+app.use(cors({ origin: '*' }));
 
-// Use CORS with specified options
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(bodyParser.json());
 
