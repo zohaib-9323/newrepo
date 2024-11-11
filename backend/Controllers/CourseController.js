@@ -17,7 +17,7 @@ const createCourse = async (req, res) => {
     }
 };
 
-// Get all courses
+
 const getAllCourses = async (req, res) => {
     try {
         const courses = await CourseModel.find();
@@ -28,7 +28,6 @@ const getAllCourses = async (req, res) => {
     }
 };
 
-// Update an existing course
 const updateCourse = async (req, res) => {
     try {
         const { id } = req.params;
@@ -51,7 +50,7 @@ const updateCourse = async (req, res) => {
     }
 };
 
-// Delete a course
+
 const deleteCourse = async (req, res) => {
     try {
         const { id } = req.params;

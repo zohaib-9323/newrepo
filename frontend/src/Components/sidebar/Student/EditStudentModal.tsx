@@ -91,7 +91,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
       Name,
       grade,
       Department,
-      courses: selectedCourseNames, // Send course names directly
+      courses: selectedCourseNames, 
       status,
     };
 
