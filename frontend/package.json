@@ -2,6 +2,7 @@
   "name": "myapp",
   "version": "0.1.0",
   "private": true,
+  "proxy":"https://school-management-api-mocha.vercel.app",
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-label": "^2.1.0",
