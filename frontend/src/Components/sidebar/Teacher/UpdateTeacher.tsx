@@ -41,7 +41,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
 
   const fetchAvailableCourses = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}/course/getcourse`);
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
       if (!response.ok) throw new Error('Failed to fetch courses');
       const data = await response.json();
       setAvailableCourses(data.courses || []);
@@ -75,7 +75,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}/teacher/updateteachers/${editTeacher.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/updateteachers/${editTeacher.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(teacherToUpdate),

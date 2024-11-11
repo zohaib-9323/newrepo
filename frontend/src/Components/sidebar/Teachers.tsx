@@ -41,10 +41,10 @@ const TeacherManagement: React.FC = () => {
 
     try {
       const teachersResponse = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}/teacher/getteachers`
+        `${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`
       );
       const coursesResponse = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}/course/getcourse`
+        `${process.env.REACT_APP_PUBLIC_URL}course/getcourse`
       );
 
       if (!teachersResponse.ok || !coursesResponse.ok) {

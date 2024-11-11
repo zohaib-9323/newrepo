@@ -40,7 +40,7 @@ const StudentDashboard: React.FC = () => {
   const fetchStudents = async () => {
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}/student/getstudent`
+        `${process.env.REACT_APP_PUBLIC_URL}student/getstudent`
       );
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -94,7 +94,7 @@ const StudentDashboard: React.FC = () => {
     if (id) {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_PUBLIC_URL}/student/deletestudent/${id}`,  
+          `${process.env.REACT_APP_PUBLIC_URL}student/deletestudent/${id}`,  
           {
             method: "DELETE",
             headers: {
