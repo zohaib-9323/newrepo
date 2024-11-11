@@ -16,10 +16,10 @@ const HomePage = () => {
       setLoading(true);
       try {
         const [teachersRes, studentsRes, coursesRes] = await Promise.all([
-          fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`),
+          fetch(`${process.env.REACT_APP_PUBLIC_URL}/teacher/getteachers`),
           // fetch('http://localhost:5007/teacher/getteachers'),
-          fetch(`${process.env.REACT_APP_PUBLIC_URL}student/getstudent`),
-          fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`)
+          fetch(`${process.env.REACT_APP_PUBLIC_URL}/student/getstudent`),
+          fetch(`${process.env.REACT_APP_PUBLIC_URL}/course/getcourse`)
         ]);
 
         const teachersData = await teachersRes.json();

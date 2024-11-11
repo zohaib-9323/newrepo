@@ -45,7 +45,7 @@ const SignUpPage: React.FC<SignUpPageProps> = ({ onSignUp, onSwitchToLogin }) =>
     }
 
     try {
-        const url = `${process.env.REACT_APP_PUBLIC_URL}auth/signup`;
+        const url = `${process.env.REACT_APP_PUBLIC_URL}/auth/signup`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {

@@ -99,13 +99,13 @@ const CoursesManagement: React.FC = () => {
     try {
       let response: Response;
       if (isEditing && selectedCourse) {
-        response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/updatecourse/${selectedCourse._id}`, {
+        response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}/course/updatecourse/${selectedCourse._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(courseData),
         });
       } else {
-        response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/addcourse`, {
+        response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}/course/addcourse`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(courseData),
@@ -130,7 +130,7 @@ const CoursesManagement: React.FC = () => {
 
   const confirmDelete = async (id: string): Promise<void> => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/deletecourse/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}/course/deletecourse/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to remove course');
