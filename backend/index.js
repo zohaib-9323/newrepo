@@ -1,12 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-require('./models/db');
+require('./src/models/db');
 const bodyParser = require('body-parser');
-const AuthRouter = require('./Routes/AuthRouter');
-const StudentRouter = require('./Routes/StudentRouter');
-const CourseRouter = require('./Routes/CourseRouter');
-const TeacherRouter = require('./Routes/TeacherRouter');
+const AuthRouter = require('./src/Routes/AuthRouter');
+const StudentRouter = require('./src/Routes/StudentRouter');
+const CourseRouter = require('./src/Routes/CourseRouter');
+const TeacherRouter = require('./src/Routes/TeacherRouter');
 
 const app = express();
 const PORT = process.env.PORT || 5007;
