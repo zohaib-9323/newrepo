@@ -11,9 +11,12 @@ const TeacherRouter = require('./src/Routes/TeacherRouter');
 const app = express();
 const PORT = process.env.PORT || 5007;
 
-// Define CORS options
-app.use(cors({ origin: '*' }));
 
+// app.use(cors({ origin: '*' }));
+app.get('/cors', (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.send({ "msg": "This has CORS enabled 🎈" })
+  })
 app.use(express.json());
 app.use(bodyParser.json());
 

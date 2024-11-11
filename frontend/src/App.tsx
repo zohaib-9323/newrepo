@@ -49,7 +49,6 @@ const App: React.FC = () => {
       setIsLoggedIn(true);
       setCurrentUser(userData);
       localStorage.setItem('currentUser', JSON.stringify(userData)); 
-      setCurrentPage("dashboard");
     } catch (error) {
       console.error(error); 
     }
@@ -62,7 +61,6 @@ const App: React.FC = () => {
     setIsLoggedIn(true);
     setCurrentUser(newUser);
     localStorage.setItem('currentUser', JSON.stringify(newUser)); 
-    setCurrentPage("dashboard");
   };
 
   const handleLogout = () => {
@@ -75,8 +73,6 @@ const App: React.FC = () => {
   const switchToSignUp = () => setCurrentPage("signup");
   const switchToLogin = () => setCurrentPage("login");
   const switchToForgotPassword = () => setCurrentPage("forgotPassword");
-
-  const switchToDashboard = () => setCurrentPage("dashboard");
 
   if (isLoggedIn && currentUser) {
     return (
