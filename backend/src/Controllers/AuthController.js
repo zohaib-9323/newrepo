@@ -97,9 +97,20 @@ const ResetPassword = async (req, res) => {
 };
 
 
+const getUsers = async (req, res) => {
+    try {
+        const users = await UserModel.find({}, { password: 0 }); // Exclude password field
+        res.status(200).json({ success: true, users });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Internal server error", success: false });
+    }
+};
+
 module.exports = {
     signup,
     login,
     forgotPassword,
-    ResetPassword
+    ResetPassword,
+    getUsers
 };
