@@ -34,7 +34,7 @@ const App: React.FC = () => {
     try {
       const BASE_URL=`${process.env.REACT_APP_PUBLIC_URL}auth/login`;
       // const response = await fetch("/auth/login", {
-        const response=await fetch("https://school-management-api-mocha.vercel.app/auth/login",{
+        const response=await fetch(BASE_URL,{
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

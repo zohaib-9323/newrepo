@@ -12,14 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 5007;
 
 
-// app.use(cors({ origin: '*' }));
-const allowedOrigins = ['https://school-management-frontend-ashy.vercel.app']; 
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify allowed HTTP methods
-  credentials: true, // Allow cookies if you need them
-}));
-
+app.use(cors({ origin: '*' }));
 app.options('*', cors());
 app.use(express.json());
 app.use(bodyParser.json());
