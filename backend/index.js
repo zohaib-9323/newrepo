@@ -14,18 +14,10 @@ const PORT = process.env.PORT || 5007;
 
 app.use(cors({
   origin: '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true, 
 }));
 
-
-app.use((req, res, next) => {
-  res.header("Content-Type", "application/json; charset=utf-8"); 
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Credentials", "true"); 
-  res.header("Vary", "Origin"); 
-  res.header("X-Powered-By", "Express"); 
-  next();
-});
 
 app.options('*', cors());
 app.use(express.json());

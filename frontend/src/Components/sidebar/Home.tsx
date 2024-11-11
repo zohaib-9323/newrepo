@@ -17,7 +17,7 @@ const HomePage = () => {
       try {
         const [teachersRes, studentsRes, coursesRes] = await Promise.all([
           fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`),
-          // fetch('http://localhost:5007/teacher/getteachers'),
+          // fetch('https://school-management-api-mocha.vercel.app/getteachers'),
           fetch(`${process.env.REACT_APP_PUBLIC_URL}student/getstudent`),
           fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`)
         ]);
