@@ -48,26 +48,17 @@ const login = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
     try {
-        const { email } = req.body; // Extract only email from the request body
+        const { email } = req.body; 
         
         if (!email) {
             return res.status(400).json({ message: "Email is required", success: false });
         }
-
-        // Find the user by email
         const user = await UserModel.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: "Email not found", success: false });
         }
 
         return res.status(200).json({ message:"Success", success: true });
-
-        // const newPassword  = req.body;
-        // const hashedPassword = await bcrypt.hash(newPassword, 10);
-        // user.password = hashedPassword;
-        // await user.save();
-
-        // res.status(200).json({ message: "Password reset successful", success: true });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Internal server error", success: false, err });
@@ -76,7 +67,7 @@ const forgotPassword = async (req, res) => {
 
 const ResetPassword = async (req, res) => {
     try {
-        const { email,newPassword } = req.body; // Extract only email from the request body
+        const { email,newPassword } = req.body;
         
         if (!email) {
             return res.status(400).json({ message: "Email is required", success: false });
@@ -99,7 +90,7 @@ const ResetPassword = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const users = await UserModel.find({}, { password: 0 }); // Exclude password field
+        const users = await UserModel.find({}, { password: 0 }); 
         res.status(200).json({ success: true, users });
     } catch (err) {
         console.error(err);

@@ -30,7 +30,8 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]); // Store course names
+  const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]); 
+  const [gradeError, setGradeError] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && student) {
@@ -77,6 +78,18 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
       }
     });
   };
+  const validateGrade = (grade: string) => {
+    const validGrades = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const validWithModifiers = validGrades.map(g => [g, `${g}+`, `${g}-`]).flat();
+
+    if (!validWithModifiers.includes(grade.toUpperCase())) {
+      setGradeError('Grade must be one of the following: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, E, E+, E-, F, F+.');
+      return false;
+    }
+
+    setGradeError('');
+    return true;
+  };
 
   const handleSave = async () => {
     if (!editStudent) return;
@@ -85,6 +98,9 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
     if (!Name || !grade || !Department || selectedCourseNames.length === 0) {
       alert('Please fill in all required fields and select at least one course.');
       return;
+    }
+    if (!validateGrade(grade)) {
+      return; 
     }
 
     const studentToUpdate = {
@@ -155,6 +171,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
               required
             />
           </div>
+          {gradeError && <p className="text-red-500 text-sm">{gradeError}</p>}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>

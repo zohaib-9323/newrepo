@@ -81,12 +81,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
             className="mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center"
           >
             <LogOut className="w-5 h-5 mr-2" />{" "}
-            {/* Adjusted width and height, and added margin-right */}
             <span>Logout</span>
           </button>
         </div>
       </div>
-
       {isOpen && (
         <div
           className="fixed inset-0 bg-black opacity-50 md:hidden z-30"

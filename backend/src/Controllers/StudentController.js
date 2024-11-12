@@ -36,6 +36,13 @@ const updateStudent = async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
+        const normalizedGrade = updates.grade.toUpperCase();
+        const validGrades = ['A', 'B', 'C', 'D', 'E', 'F'];
+        const validWithModifiers = validGrades.map(g => [g, `${g}+`, `${g}-`]).flat();
+        if (!validWithModifiers.includes(normalizedGrade)) {
+            return res.status(400).json({ message: "Grade must be one of the following: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, E, E+, E-, F, F+.", success: false });
+        }
+
         if (updates.courses && (!Array.isArray(updates.courses) || updates.courses.length > 3)) {
             return res.status(400).json({ message: "You can only select up to 3 courses.", success: false });
         }
