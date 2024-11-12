@@ -12,16 +12,16 @@ import EditStudentModal from "./Student/EditStudentModal";
 import DeleteConfirmationModal from "./Student/DeleteConfirmmationModal";
 
 interface Course {
-  id: string; 
+  id: string;
   name: string;
 }
 
 interface Student {
-  id: string; 
+  id: string;
   Name: string;
   Department: string;
   grade: string;
-  status: "Active" | "Inactive"; 
+  status: "Active" | "Inactive";
   courses: Course[];
 }
 
@@ -36,7 +36,7 @@ const StudentDashboard: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
- 
+
   const fetchStudents = async () => {
     try {
       const response = await fetch(
@@ -53,10 +53,10 @@ const StudentDashboard: React.FC = () => {
         Department: student.Department,
         grade: student.grade,
         status: student.status || "Active",
-        courses: student.courses.map((course:string, index:number) =>({
+        courses: student.courses.map((course: string, index: number) => ({
           id: index,
-          name: course
-        }))
+          name: course,
+        })),
       }));
 
       setStudents(transformedData);
@@ -81,7 +81,7 @@ const StudentDashboard: React.FC = () => {
       setSortDirection("asc");
     }
   };
-  
+
   const handleEditClick = (student: Student) => {
     setSelectedStudent(student);
     setIsEditModalOpen(true);
@@ -94,7 +94,7 @@ const StudentDashboard: React.FC = () => {
     if (id) {
       try {
         const response = await fetch(
-          `${process.env.REACT_APP_PUBLIC_URL}student/deletestudent/${id}`,  
+          `${process.env.REACT_APP_PUBLIC_URL}student/deletestudent/${id}`,
           {
             method: "DELETE",
             headers: {
@@ -102,24 +102,23 @@ const StudentDashboard: React.FC = () => {
             },
           }
         );
-  
+
         if (response.ok) {
-          setStudents((prev) =>
-            prev.filter((student) => student.id !== id)
-          );
+          setStudents((prev) => prev.filter((student) => student.id !== id));
         } else {
           const errorData = await response.json();
           setError(errorData.message || "Failed to delete student.");
         }
       } catch (error) {
-        setError(error instanceof Error ? error.message : "An unknown error occurred.");
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred."
+        );
       }
     }
-  
+
     setIsDeleteConfirmOpen(false);
     setSelectedStudent(null);
   };
-  
 
   const sortedStudents = [...students].sort((a, b) => {
     const modifier = sortDirection === "asc" ? 1 : -1;
@@ -270,8 +269,8 @@ const StudentDashboard: React.FC = () => {
       <DeleteConfirmationModal
         isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}
-        onConfirm={() => confirmDelete(selectedStudent?.id || '')}
-        studentName={selectedStudent?.Name || null} 
+        onConfirm={() => confirmDelete(selectedStudent?.id || "")}
+        studentName={selectedStudent?.Name || null}
       />
     </>
   );
