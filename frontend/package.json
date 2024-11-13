@@ -2,7 +2,6 @@
   "name": "myapp",
   "version": "0.1.0",
   "private": true,
-  
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-label": "^2.1.0",
@@ -35,6 +34,7 @@
     "react-toastify": "^10.0.6",
     "recharts": "^2.13.3",
     "shadcn": "^2.1.5",
+    "socket.io-client": "4.8.3",
     "tailwind-merge": "^2.5.4",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",

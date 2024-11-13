@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import LoginPage from "./Components/pages/Login/Login";
 import SignUpPage from "./Components/pages/SignUp/Signup";
 import ForgotPasswordPage from "./Components/pages/Fogotpassword/Forgotpassword";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Sidebar from "./Components/sidebar/Sidebar";
-import HomePage from './Components/sidebar/Home';
-import StudentDashboard from './Components/sidebar/StudentDashboard';
-import CoursesManagement from './Components/sidebar/CourseManagement';
-import TeacherManagement from './Components/sidebar/Teachers';
+import HomePage from "./Components/sidebar/Home";
+import StudentDashboard from "./Components/sidebar/StudentDashboard";
+import CoursesManagement from "./Components/sidebar/CourseManagement";
+import TeacherManagement from "./Components/sidebar/Teachers";
 
 interface User {
   firstName: string;
@@ -17,56 +17,63 @@ interface User {
 }
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<"login" | "signup" | "dashboard" | "forgotPassword">("login");
+  const [currentPage, setCurrentPage] = useState<
+    "login" | "signup" | "forgotPassword"
+  >("login");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser');
+    const storedUser = localStorage.getItem("currentUser");
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
       setIsLoggedIn(true);
-      setCurrentPage("dashboard");
+      // setCurrentPage("dashboard");
     }
   }, []);
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      const BASE_URL=`${process.env.REACT_APP_PUBLIC_URL}auth/login`;
-        const response=await fetch(BASE_URL,{
-        method: 'POST',
+      const BASE_URL = `${process.env.REACT_APP_PUBLIC_URL}auth/login`;
+      const response = await fetch(BASE_URL, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) {
-        throw new Error('Invalid email or password');
+        throw new Error("Invalid email or password");
       }
 
       const userData = await response.json();
       setIsLoggedIn(true);
       setCurrentUser(userData);
-      localStorage.setItem('currentUser', JSON.stringify(userData)); 
+      localStorage.setItem("currentUser", JSON.stringify(userData));
     } catch (error) {
-      console.error(error); 
+      console.error(error);
     }
   };
 
-  const handleSignUp = (firstName: string, lastName: string, email: string, password: string) => {
+  const handleSignUp = (
+    firstName: string,
+    lastName: string,
+    email: string,
+    password: string
+  ) => {
     const newUser = { firstName, lastName, email, password };
     const updatedUsers = [...users, newUser];
     setUsers(updatedUsers);
     setIsLoggedIn(true);
     setCurrentUser(newUser);
-    localStorage.setItem('currentUser', JSON.stringify(newUser)); 
+    localStorage.setItem("currentUser", JSON.stringify(newUser));
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentUser(null);
-    localStorage.removeItem('currentUser'); 
+    localStorage.removeItem("currentUser");
     setCurrentPage("login");
   };
 
@@ -96,20 +103,15 @@ const App: React.FC = () => {
   return (
     <div>
       {currentPage === "login" ? (
-        <LoginPage 
-          onLogin={handleLogin} 
-          onSwitchToSignUp={switchToSignUp} 
-          onSwitchToForgotPassword={switchToForgotPassword} 
+        <LoginPage
+          onLogin={handleLogin}
+          onSwitchToSignUp={switchToSignUp}
+          onSwitchToForgotPassword={switchToForgotPassword}
         />
       ) : currentPage === "signup" ? (
-        <SignUpPage 
-          onSignUp={handleSignUp} 
-          onSwitchToLogin={switchToLogin} 
-        />
+        <SignUpPage onSignUp={handleSignUp} onSwitchToLogin={switchToLogin} />
       ) : currentPage === "forgotPassword" ? (
-        <ForgotPasswordPage 
-          onSwitchToLogin={switchToLogin} 
-        />
+        <ForgotPasswordPage onSwitchToLogin={switchToLogin} />
       ) : null}
     </div>
   );
