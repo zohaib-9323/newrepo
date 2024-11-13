@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useForgetpasswordMutation } from '../../../Services/auth';
+import { useResetpasswordMutation } from '../../../Services/auth';
 
-interface ForgotPasswordProps {
-    onSwitchToLogin: () => void;
-}
-
-const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
+const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -13,6 +12,10 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
   const [error, setError] = useState('');
   const [step, setStep] = useState<'email' | 'resetPassword'>('email');
   const [message, setMessage] = useState('');
+  const [forgotPassword] = useForgetpasswordMutation();
+  const [resetPassword] = useResetpasswordMutation();
+
+  const navigate = useNavigate();
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,18 +42,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}auth/forgotpassword`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Email not found');
-      }
-
+      await forgotPassword(email).unwrap();
       setStep('resetPassword');
       setMessage('Email verified. Please enter your new password.');
     } catch (error) {
@@ -78,20 +70,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
     }
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}auth/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, newPassword }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to reset password');
-      }
-
+      await resetPassword({email, newPassword}).unwrap();
       setMessage('Password successfully reset! You can now login with your new password.');
-      setTimeout(onSwitchToLogin, 3000);
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 3000);
     } catch (error) {
       setError('Failed to reset password. Please try again.');
     }
@@ -129,8 +112,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
                 Verify Email
               </button>
               <button
-                type="button"
-                onClick={onSwitchToLogin}
+                onClick={()=>navigate("/login")}
                 className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Back to Login
@@ -184,8 +166,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onSwitchToLogin }) => {
                 Reset Password
               </button>
               <button
-                type="button"
-                onClick={onSwitchToLogin}
+                onClick={()=>navigate("/login")}
                 className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Back to Login
