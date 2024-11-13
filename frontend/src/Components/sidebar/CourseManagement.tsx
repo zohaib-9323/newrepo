@@ -1,6 +1,6 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent,useEffect } from 'react';
+import { useGetAllCoursesQuery, useAddCourseMutation, useUpdateCourseMutation, useDeleteCourseMutation } from '../../Services/courseapi';
 import DeleteConfirmationModal from './Student/DeleteConfirmmationModal';
-
 
 interface Course {
   _id: string;
@@ -10,60 +10,56 @@ interface Course {
 }
 
 interface FormData {
+  _id: string;
   name: string;
   price: string;
   institute: string;
 }
+interface CoursesResponse {
+  message: string;
+  courses: Course[];
+}
 
 const CoursesManagement: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
+    _id: '',
     name: '',
     price: '',
-    institute: ''
+    institute: '',
   });
 
-  const fetchCourses = async (): Promise<void> => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
-      if (!response.ok) throw new Error('Failed to fetch courses');
-      const data = await response.json();
-      setCourses(data.courses || []);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An unknown error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: coursesResponse = { message: '', courses: [] }, isLoading, isError, error } = useGetAllCoursesQuery();
+  const [addCourse] = useAddCourseMutation();
+  const [updateCourse] = useUpdateCourseMutation();
+  const [deleteCourse] = useDeleteCourseMutation();
 
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    if (coursesResponse?.courses?.length) {
+      console.log('Courses list updated', coursesResponse.courses);
+    }
+  }, [coursesResponse]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const validateUniqueName = (name: string, courseId: string | null = null): boolean => {
-    return !courses.some(course => 
-      course.name.toLowerCase() === name.toLowerCase() && course._id !== courseId
+    return !coursesResponse.courses.some(
+      (course: Course) => course.name.toLowerCase() === name.toLowerCase() && course._id !== courseId
     );
   };
 
   const resetForm = (): void => {
-    setFormData({ name: '', price: '', institute: '' });
+    setFormData({ _id:'',name: '', price: '', institute: '' });
     setIsEditing(false);
     setSelectedCourse(null);
     setIsModalOpen(false);
@@ -73,9 +69,10 @@ const CoursesManagement: React.FC = () => {
     setIsEditing(true);
     setSelectedCourse(course);
     setFormData({
+      _id: course._id,
       name: course.name,
       price: course.price.toString(),
-      institute: course.institute
+      institute: course.institute,
     });
     setIsModalOpen(true);
   };
@@ -93,48 +90,31 @@ const CoursesManagement: React.FC = () => {
 
     const courseData = {
       ...formData,
-      price: parseFloat(formData.price)
+      price: parseFloat(formData.price),
     };
 
     try {
-      let response: Response;
       if (isEditing && selectedCourse) {
-        response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/updatecourse/${selectedCourse._id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(courseData),
-        });
+        console.log(courseData);
+        await updateCourse(courseData); 
       } else {
-        response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/addcourse`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(courseData),
-        });
+        await addCourse(courseData); 
       }
-
-      if (!response.ok) {
-        throw new Error(isEditing ? 'Failed to update course' : 'Failed to add course');
-      }
-
-      await response.json();
-      fetchCourses();
       resetForm();
     } catch (error) {
       alert(isEditing ? 'Failed to update course' : 'Failed to add course');
     }
   };
+
   const handleRemoveCourse = (id: string) => {
-    setSelectedCourse(courses.find((course) => course._id === id) || null);
+    const selectedCourse = coursesResponse.courses.find((course: Course) => course._id === id) || null;
+    setSelectedCourse(selectedCourse);
     setIsDeleteConfirmOpen(true);
   };
 
   const confirmDelete = async (id: string): Promise<void> => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/deletecourse/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to remove course');
-      fetchCourses();
+      await deleteCourse(id); 
     } catch (error) {
       alert('Failed to remove course. Please try again.');
     }
@@ -157,11 +137,11 @@ const CoursesManagement: React.FC = () => {
         </button>
       </div>
 
-      {loading && <div className="text-center text-blue-500">Loading courses...</div>}
-      {error && <div className="text-center text-red-500">{error}</div>}
+      {isLoading && <div className="text-center text-blue-500">Loading courses...</div>}
+      {isError && <div className="text-center text-red-500">{(error as any).message}</div>}
 
       <div className="space-y-4 mb-6">
-        {courses.map((course) => (
+        {coursesResponse.courses.map((course: Course) => (
           <div
             key={course._id}
             className="flex justify-between items-center p-4 border rounded-lg bg-gray-50"
@@ -194,19 +174,19 @@ const CoursesManagement: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-96">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                {isEditing ? 'Edit Course' : 'Add New Course'}
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-semibold">
+                {isEditing ? 'Edit Course' : 'Add Course'}
               </h3>
               <button
                 onClick={resetForm}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-600 hover:text-gray-900"
               >
-                ✕
+                X
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 mt-4">
               <div>
                 <label htmlFor="course-name" className="block mb-2 font-medium">
                   Course Name
@@ -270,14 +250,15 @@ const CoursesManagement: React.FC = () => {
           </div>
         </div>
       )}
+
       <DeleteConfirmationModal
         isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}
         onConfirm={() => confirmDelete(selectedCourse?._id || '')}
-        studentName={selectedCourse?.name || null} 
+        studentName={selectedCourse?.name || null}
       />
       <div className="mt-4 text-gray-600">
-        Total Courses: {courses.length}
+        Total Courses: {coursesResponse.courses.length}
       </div>
     </div>
   );

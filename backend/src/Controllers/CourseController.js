@@ -46,7 +46,7 @@ const updateCourse = async (req, res) => {
         res.status(200).json({ message: 'Course updated successfully', success: true, course: updatedCourse });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Internal server error', success: false });
+        res.status(500).json({ message: 'Internal server error', success: false, error: err });
     }
 };
 
