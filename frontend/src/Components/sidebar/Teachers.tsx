@@ -54,15 +54,13 @@ const TeacherManagement: React.FC = () => {
       const teachersData = await teachersResponse.json();
       const coursesData = await coursesResponse.json();
 
-      const transformedTeachers = teachersData.teachers.map(
-        (teacher: any) => ({
-          id: teacher._id,
-          name: teacher.name,
-          email: teacher.email,
-          course: teacher.course || "",
-          charges: teacher.charges || "",
-        })
-      );
+      const transformedTeachers = teachersData.teachers.map((teacher: any) => ({
+        id: teacher._id,
+        name: teacher.name,
+        email: teacher.email,
+        course: teacher.course || "",
+        charges: teacher.charges || "",
+      }));
 
       setTeachers(transformedTeachers);
       setAvailableCourses(coursesData.courses || []);

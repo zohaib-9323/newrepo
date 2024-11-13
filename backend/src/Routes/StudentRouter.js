@@ -4,8 +4,7 @@ const {
     getAllStudents,
     updateStudent,
     deleteStudent
-} = require('../Controllers/StudentController'); // Adjust the path based on your structure
-
+} = require('../Controllers/StudentController'); 
 const router = express.Router();
 
 router.post('/creatstudent', createStudent);

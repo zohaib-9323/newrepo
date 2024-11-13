@@ -1,15 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Users, GraduationCap, BookOpen, TrendingUp } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from "react";
+import { Users, GraduationCap, BookOpen, TrendingUp } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const HomePage = () => {
   const [stats, setStats] = useState({
     teachers: [],
     students: [],
-    courses: []
+    courses: [],
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);  
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -18,7 +26,7 @@ const HomePage = () => {
         const [teachersRes, studentsRes, coursesRes] = await Promise.all([
           fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`),
           fetch(`${process.env.REACT_APP_PUBLIC_URL}student/getstudent`),
-          fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`)
+          fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`),
         ]);
 
         const teachersData = await teachersRes.json();
@@ -28,10 +36,10 @@ const HomePage = () => {
         setStats({
           teachers: teachersData.teachers || [],
           students: studentsData.students || [],
-          courses: coursesData.courses || []
+          courses: coursesData.courses || [],
         });
       } catch (err) {
-        setError('Failed to fetch dashboard data');
+        setError("Failed to fetch dashboard data");
         console.error(err);
       } finally {
         setLoading(false);
@@ -42,7 +50,8 @@ const HomePage = () => {
   }, []);
 
   const getActiveStudents = () => {
-    return stats.students.filter((student: any) => student.status === 'Active').length;
+    return stats.students.filter((student: any) => student.status === "Active")
+      .length;
   };
 
   const getCoursesData = () => {
@@ -50,7 +59,7 @@ const HomePage = () => {
       name: course.name,
       students: stats.students.filter((student: any) =>
         student.courses?.some((sc: string) => sc === course.name)
-      ).length
+      ).length,
     }));
   };
 
@@ -72,13 +81,15 @@ const HomePage = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard Overview</h1>
-      
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">
+        Dashboard Overview
+      </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Stats Cards */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-600">Total Teachers</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Total Teachers
+            </h3>
             <Users className="w-4 h-4 text-gray-600" />
           </div>
           <div className="text-2xl font-bold text-gray-800">
@@ -88,7 +99,9 @@ const HomePage = () => {
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-600">Total Students</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Total Students
+            </h3>
             <GraduationCap className="w-4 h-4 text-gray-600" />
           </div>
           <div className="text-2xl font-bold text-gray-800">
@@ -111,13 +124,15 @@ const HomePage = () => {
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-gray-600">Avg Students/Course</h3>
+            <h3 className="text-sm font-medium text-gray-600">
+              Avg Students/Course
+            </h3>
             <TrendingUp className="w-4 h-4 text-gray-600" />
           </div>
           <div className="text-2xl font-bold text-gray-800">
-            {stats.courses.length ? 
-              (stats.students.length / stats.courses.length).toFixed(1) 
-              : '0'}
+            {stats.courses.length
+              ? (stats.students.length / stats.courses.length).toFixed(1)
+              : "0"}
           </div>
         </div>
       </div>
@@ -127,7 +142,10 @@ const HomePage = () => {
         </h3>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={getCoursesData()} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart
+              data={getCoursesData()}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
@@ -137,38 +155,50 @@ const HomePage = () => {
           </ResponsiveContainer>
         </div>
       </div>
-
-      {/* Latest Updates or Additional Stats can be added here */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Teachers</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Recent Teachers
+          </h3>
           <div className="space-y-3">
             {stats.teachers.slice(-3).map((teacher: any) => (
-              <div key={teacher._id} className="flex justify-between items-center">
+              <div
+                key={teacher._id}
+                className="flex justify-between items-center"
+              >
                 <div>
                   <p className="font-medium text-gray-800">{teacher.name}</p>
                   <p className="text-sm text-gray-600">{teacher.course}</p>
                 </div>
-                <span className="text-sm text-gray-600">${teacher.charges}/hr</span>
+                <span className="text-sm text-gray-600">
+                  ${teacher.charges}/hr
+                </span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Students</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Recent Students
+          </h3>
           <div className="space-y-3">
             {stats.students.slice(-3).map((student: any) => (
-              <div key={student._id} className="flex justify-between items-center">
+              <div
+                key={student._id}
+                className="flex justify-between items-center"
+              >
                 <div>
                   <p className="font-medium text-gray-800">{student.Name}</p>
                   <p className="text-sm text-gray-600">{student.Department}</p>
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  student.status === 'Active' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    student.status === "Active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
                   {student.status}
                 </span>
               </div>
