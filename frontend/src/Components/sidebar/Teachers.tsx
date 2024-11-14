@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import DeleteConfirmationModal from "./Student/DeleteConfirmmationModal";
 import UpdateTeacher from "./Teacher/UpdateTeacher";
+import { useLazyGetAllCoursesQuery } from '../../Services/courseapi';
+import { 
+  useLazyGetAllTeachersQuery,
+  useAddTeacherMutation,
+  useDeleteTeacherMutation,
+  useUpdateTeacherMutation
+} from "../../Services/teacherapi";
+
 
 interface Teacher {
   id: number | null;
@@ -15,6 +23,10 @@ interface Course {
   name: string;
   price: number;
   institute: string;
+}
+interface TeachersResponse {
+  message: string;
+  teachers: Teacher[];
 }
 
 const TeacherManagement: React.FC = () => {
@@ -34,36 +46,28 @@ const TeacherManagement: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [getAllCoursesApi]=useLazyGetAllCoursesQuery()
+  const[getAllTeachers]=useLazyGetAllTeachersQuery();
+  const [addNewTeacher] = useAddTeacherMutation();
+  const [updateTeacher] = useUpdateTeacherMutation();
+  const [deleteTeacher] = useDeleteTeacherMutation();
 
   const fetchData = async () => {
     setLoading(true);
     setErrorMessage("");
-
     try {
-      const teachersResponse = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`
-      );
-      const coursesResponse = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}course/getcourse`
-      );
-
-      if (!teachersResponse.ok || !coursesResponse.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const teachersData = await teachersResponse.json();
-      const coursesData = await coursesResponse.json();
-
-      const transformedTeachers = teachersData.teachers.map((teacher: any) => ({
-        id: teacher._id,
-        name: teacher.name,
-        email: teacher.email,
-        course: teacher.course || "",
-        charges: teacher.charges || "",
-      }));
-
-      setTeachers(transformedTeachers);
-      setAvailableCourses(coursesData.courses || []);
+      const response = await getAllTeachers();
+      if(response.data){
+        const teachersData: TeachersResponse = response.data;
+        const transformedTeachers = teachersData.teachers.map((teacher: any) => ({
+          id: teacher._id,
+          name: teacher.name,
+          email: teacher.email,
+          course: teacher.course || "",
+          charges: teacher.charges || "",
+        }));
+        setTeachers(transformedTeachers);
+      }    
     } catch (error) {
       setErrorMessage("Error fetching data. Please try again.");
       console.error("Error fetching data:", error);
@@ -72,8 +76,22 @@ const TeacherManagement: React.FC = () => {
     }
   };
 
+  const fetchAvailableCourses = async () => {
+    try{
+      const response = await getAllCoursesApi();
+      if (response.data) {
+        const coursesData: Course[] = response.data?.courses || [];
+        setAvailableCourses(coursesData);
+      }
+    } catch (error) {
+          console.error('Error fetching courses:', error);
+          alert('Failed to load available courses');
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchAvailableCourses();
   }, []);
 
   const handleInputChange = (
@@ -125,32 +143,7 @@ const TeacherManagement: React.FC = () => {
       setLoading(true);
       setErrorMessage("");
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_PUBLIC_URL}teacher/createteachers`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(teacherToAdd),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to add teacher");
-        }
-        const data = await response.json();
-        const addedTeacher = data.teacher;
-        setTeachers((prev) => [
-          ...prev,
-          {
-            id: addedTeacher.id,
-            name: addedTeacher.name,
-            email: addedTeacher.email,
-            course: addedTeacher.course || "",
-            charges: addedTeacher.charges || 0,
-          },
-        ]);
+        const response = await addNewTeacher(teacherToAdd).unwrap();
         setNewTeacher({
           id: null,
           name: "",
@@ -158,6 +151,7 @@ const TeacherManagement: React.FC = () => {
           course: "",
           charges: "",
         });
+        fetchData();
         setErrors({});
         setIsAddingTeacher(false);
       } catch (error) {
@@ -182,22 +176,8 @@ const TeacherManagement: React.FC = () => {
   const confirmDelete = async (id: number) => {
     if (id) {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_PUBLIC_URL}teacher/delteachers/${id}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.ok) {
+        const response = await deleteTeacher(id).unwrap();
           setTeachers((prev) => prev.filter((teacher) => teacher.id !== id));
-        } else {
-          const errorData = await response.json();
-          setErrorMessage(errorData.message || "Failed to delete teacher.");
-        }
       } catch (error) {
         setErrorMessage(
           error instanceof Error ? error.message : "An unknown error occurred."

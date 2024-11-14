@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent,useEffect } from 'react';
-import { useGetAllCoursesQuery, useAddCourseMutation, useUpdateCourseMutation, useDeleteCourseMutation } from '../../Services/courseapi';
+import { useGetAllCoursesQuery, useAddCourseMutation, useUpdateCourseMutation, useDeleteCourseMutation, useLazyGetAllCoursesQuery } from '../../Services/courseapi';
 import DeleteConfirmationModal from './Student/DeleteConfirmmationModal';
 
 interface Course {
@@ -32,18 +32,31 @@ const CoursesManagement: React.FC = () => {
     price: '',
     institute: '',
   });
-
-  const { data: coursesResponse = { message: '', courses: [] }, isLoading, isError, error } = useGetAllCoursesQuery();
+const [courses, setCourses] = useState<Course[]>([]);
+  const [getAllCoursesApi,{isLoading,isError}]=useLazyGetAllCoursesQuery()
   const [addCourse] = useAddCourseMutation();
   const [updateCourse] = useUpdateCourseMutation();
   const [deleteCourse] = useDeleteCourseMutation();
+  const [error, setError] = useState<string | null>(null);
+
+ 
+ 
+  const getCourseApiHandler = async () => {
+    try {
+      const response = await getAllCoursesApi();
+      if (response.data) {
+        const coursesData: CoursesResponse = response.data;
+        setCourses(coursesData.courses);
+      }
+    } catch (error) {
+      console.error("Failed to fetch courses:", error);
+      setError("Failed to fetch courses");
+    }
+  };
 
   useEffect(() => {
-    if (coursesResponse?.courses?.length) {
-      console.log('Courses list updated', coursesResponse.courses);
-    }
-  }, [coursesResponse]);
-
+    getCourseApiHandler();
+  }, []);
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -53,7 +66,7 @@ const CoursesManagement: React.FC = () => {
   };
 
   const validateUniqueName = (name: string, courseId: string | null = null): boolean => {
-    return !coursesResponse.courses.some(
+    return !courses.some(
       (course: Course) => course.name.toLowerCase() === name.toLowerCase() && course._id !== courseId
     );
   };
@@ -95,10 +108,11 @@ const CoursesManagement: React.FC = () => {
 
     try {
       if (isEditing && selectedCourse) {
-        console.log(courseData);
         await updateCourse(courseData); 
+        getCourseApiHandler();
       } else {
         await addCourse(courseData); 
+        getCourseApiHandler();
       }
       resetForm();
     } catch (error) {
@@ -107,7 +121,7 @@ const CoursesManagement: React.FC = () => {
   };
 
   const handleRemoveCourse = (id: string) => {
-    const selectedCourse = coursesResponse.courses.find((course: Course) => course._id === id) || null;
+    const selectedCourse = courses.find((course: Course) => course._id === id) || null;
     setSelectedCourse(selectedCourse);
     setIsDeleteConfirmOpen(true);
   };
@@ -118,11 +132,13 @@ const CoursesManagement: React.FC = () => {
     } catch (error) {
       alert('Failed to remove course. Please try again.');
     }
+    getCourseApiHandler();
     setIsDeleteConfirmOpen(false);
     setSelectedCourse(null);
   };
 
   return (
+    // <div>testing</div>
     <div className="max-w-2xl mx-auto p-4 bg-white shadow-md rounded-lg">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Courses Management</h2>
@@ -141,7 +157,7 @@ const CoursesManagement: React.FC = () => {
       {isError && <div className="text-center text-red-500">{(error as any).message}</div>}
 
       <div className="space-y-4 mb-6">
-        {coursesResponse.courses.map((course: Course) => (
+        {courses.map((course: Course) => (
           <div
             key={course._id}
             className="flex justify-between items-center p-4 border rounded-lg bg-gray-50"
@@ -171,7 +187,7 @@ const CoursesManagement: React.FC = () => {
         ))}
       </div>
 
-      {isModalOpen && (
+       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-96">
             <div className="flex justify-between items-center">
@@ -186,12 +202,12 @@ const CoursesManagement: React.FC = () => {
               </button>
             </div>
 
-            <div className="space-y-4 mt-4">
-              <div>
-                <label htmlFor="course-name" className="block mb-2 font-medium">
-                  Course Name
-                </label>
-                <input
+              <div className="space-y-4 mt-4">
+               <div>
+                 <label htmlFor="course-name" className="block mb-2 font-medium">
+                   Course Name
+                 </label>
+                 <input
                   id="course-name"
                   name="name"
                   type="text"
@@ -200,7 +216,7 @@ const CoursesManagement: React.FC = () => {
                   placeholder="Enter course name"
                   className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
+              </div> 
 
               <div>
                 <label htmlFor="course-institute" className="block mb-2 font-medium">
@@ -257,10 +273,10 @@ const CoursesManagement: React.FC = () => {
         onConfirm={() => confirmDelete(selectedCourse?._id || '')}
         studentName={selectedCourse?.name || null}
       />
-      <div className="mt-4 text-gray-600">
-        Total Courses: {coursesResponse.courses.length}
-      </div>
-    </div>
+        <div className="mt-4 text-gray-600">
+        Total Courses: {courses.length}
+      </div> 
+    </div> 
   );
 };
 

@@ -14,13 +14,6 @@ const PublicRoutes: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const navigate = useNavigate();
 
-  // const handleLogin = (email: string, password: string) => {
-  //   const userData = { email, password };
-  //   localStorage.setItem("currentUser", JSON.stringify(userData));
-  //   window.dispatchEvent(new Event('authChange'));
-  //   navigate('/');
-  // };
-
   const handleSignUp = (
     firstName: string,
     lastName: string,

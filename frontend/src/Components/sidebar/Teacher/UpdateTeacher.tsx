@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useLazyGetAllCoursesQuery } from '../../../Services/courseapi';
+import { useUpdateTeacherMutation } from '../../../Services/teacherapi';
 
 interface Teacher {
     id: number | null;
@@ -8,8 +10,8 @@ interface Teacher {
     charges: string;
   }
 
-interface Course {
-  _id: string;
+interface TeacherCourse {
+  id: string;
   name: string;
 }
 
@@ -28,8 +30,10 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
 }) => {
   const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [selectedCourseName, setSelectedCourseName] = useState<string>(''); // Single course
+  const [availableCourses, setAvailableCourses] = useState<TeacherCourse[]>([]);
+  const [selectedCourseName, setSelectedCourseName] = useState<string>('');
+  const [getAllCoursesApi,{isLoading,isError}]=useLazyGetAllCoursesQuery()
+  const [updateTeacherApi] = useUpdateTeacherMutation();
 
   useEffect(() => {
     if (isOpen && teacher) {
@@ -40,14 +44,16 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
   }, [isOpen, teacher]);
 
   const fetchAvailableCourses = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
-      if (!response.ok) throw new Error('Failed to fetch courses');
-      const data = await response.json();
-      setAvailableCourses(data.courses || []);
+    try{
+      const response = await getAllCoursesApi();
+      if (response.data) {
+        const coursesData: TeacherCourse[] = response.data.courses.map(course => ({ id: course._id, name: course.name }));
+        setAvailableCourses(coursesData);
+        console.log(coursesData);
+      }
     } catch (error) {
-      console.error('Error fetching courses:', error);
-      alert('Failed to load available courses');
+          console.error('Error fetching courses:', error);
+          alert('Failed to load available courses');
     }
   };
 
@@ -67,6 +73,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
     }
 
     const teacherToUpdate = {
+      id: editTeacher.id,
       name,
       email,
       course: selectedCourseName,
@@ -75,16 +82,10 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/updateteachers/${editTeacher.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(teacherToUpdate),
-      });
-
-      if (!response.ok) throw new Error('Failed to update teacher');
-      
-      await response.json();
-      alert('Teacher details updated successfully!');
+      const response = await updateTeacherApi(teacherToUpdate).unwrap();
+      if(response.message){
+        alert('Teacher details updated successfully!');
+      }
       fetchTeachers();
       onClose();
     } catch (error) {
@@ -140,7 +141,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
             >
               <option value="">Select a Course</option>
               {availableCourses.map(course => (
-                <option key={course._id} value={course.name}>
+                <option key={course.id} value={course.name}>
                   {course.name}
                 </option>
               ))}

@@ -18,7 +18,7 @@ exports.createTeacher = async (req, res) => {
 exports.getAllTeachers = async (req, res) => {
     try {
         const teachers = await TeacherModel.find();
-        return res.status(200).json({ teachers });
+        return res.status(200).json({ success:"true",teachers });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Error fetching teachers', error: error.message });

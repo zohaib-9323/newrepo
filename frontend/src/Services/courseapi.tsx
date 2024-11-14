@@ -21,6 +21,10 @@ export const courseapiSlice = createApi({
     getAllCourses: builder.query<CoursesResponse, void>({
       query: () => 'course/getcourse',
     }),
+
+    // getAllCourses: builder.query({
+    //     query: () => 'course/getcourse',
+    //   }),
     addCourse: builder.mutation({
       query: (course) => ({
         url: 'course/addcourse',
@@ -49,4 +53,5 @@ export const {
   useAddCourseMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation,
+  useLazyGetAllCoursesQuery
 } = courseapiSlice;

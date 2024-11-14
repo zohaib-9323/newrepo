@@ -70,7 +70,7 @@ const deleteStudent = async (req, res) => {
 
         res.status(200).json({ message: "Student deleted successfully", success: true });
     } catch (err) {
-        res.status(500).json({ message: "Internal server error", success: false });
+        res.status(500).json({ message: "Internal server error", success: false, error: err.message });
     }
 };
 module.exports = {
