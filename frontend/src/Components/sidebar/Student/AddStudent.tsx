@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useAddStudentMutation } from '../../../Services/studentapi';
+import { useLazyGetAllCoursesQuery } from '../../../Services/courseapi';
 
 interface AddStudentModalProps {
   isOpen: boolean;
@@ -34,7 +36,8 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
   const [courseError, setCourseError] = useState<string>('');
   const [gradeError, setGradeError] = useState<string>('');
-
+  const [addStudent] = useAddStudentMutation();
+  const [getAllCoursesApi,{isLoading,isError}]=useLazyGetAllCoursesQuery()
   useEffect(() => {
     if (isOpen) {
       fetchAvailableCourses();
@@ -42,16 +45,16 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
   }, [isOpen]);
 
   const fetchAvailableCourses = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch courses');
+    try{
+      const response = await getAllCoursesApi();
+      if (response.data) {
+        const coursesData: Course[] = response.data?.courses || [];
+        setAvailableCourses(coursesData);
+        console.log(coursesData);
       }
-      const data = await response.json();
-      setAvailableCourses(data.courses || []);
     } catch (error) {
-      console.error('Error fetching courses:', error);
-      alert('Failed to load available courses');
+          console.error('Error fetching courses:', error);
+          alert('Failed to load available courses');
     }
   };
 
@@ -86,7 +89,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
     });
   };
 
-  // Grade validation function
+
   const validateGrade = (grade: string) => {
     const validGrades = ['A', 'B', 'C', 'D', 'E', 'F'];
     const validWithModifiers = validGrades.map(g => [g, `${g}+`, `${g}-`]).flat();
@@ -103,46 +106,28 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     const { Name, grade, Department, courses } = newStudent;
-
-    // Validate required fields and grade
     if (!Name || !grade || !Department || courses.length === 0) {
       alert('Please fill in all required fields and select at least one course.');
       return;
     }
-
     if (!validateGrade(grade)) {
-      return; // Stop form submission if the grade is invalid
+      return; 
     }
-
-    const courseNames = courses;
     const studentToAdd = {
       Name,
       grade,
       Department,
-      courses: courseNames,  
+      courses, 
       status: newStudent.status,
     };
-
+  
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}student/creatstudent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(studentToAdd), 
-      });
-
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        throw new Error(`Error: ${response.status} ${errorMessage}`);
-      }
-
-      await response.json();
+      await addStudent(studentToAdd).unwrap();
       alert('Student added successfully!');
-      fetchStudents(); // Refetch the students list to reflect the new addition
-      setNewStudent({ Name: '', grade: '', Department: '', status: 'Active', courses: [] }); // Reset form fields
-      onClose(); // Close the modal after submission
+      fetchStudents(); 
+      setNewStudent({ Name: '', grade: '', Department: '', status: 'Active', courses: [] }); 
+      onClose(); 
     } catch (error) {
       console.error('Failed to add student:', error);
       alert('Failed to add student. Please try again.');
@@ -150,6 +135,7 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
       setLoading(false);
     }
   };
+  
 
   if (!isOpen) return null;
 

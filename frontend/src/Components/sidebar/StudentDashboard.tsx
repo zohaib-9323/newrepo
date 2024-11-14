@@ -10,6 +10,7 @@ import {
 import AddStudentModal from "./Student/AddStudent";
 import EditStudentModal from "./Student/EditStudentModal";
 import DeleteConfirmationModal from "./Student/DeleteConfirmmationModal";
+import { useLazyGetAllStudentsQuery,useGetAllStudentsQuery,useDeleteStudentMutation} from "../../Services/studentapi";
 
 interface Course {
   id: string;
@@ -24,6 +25,11 @@ interface Student {
   status: "Active" | "Inactive";
   courses: Course[];
 }
+interface StudentsResponse {
+  message: string;
+  students: Student[];
+}
+
 
 const StudentDashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,30 +42,31 @@ const StudentDashboard: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data } = useGetAllStudentsQuery();
+  const [getAllStudentApi]=useLazyGetAllStudentsQuery()
+  const [deleteStudent] = useDeleteStudentMutation();
+
+
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}student/getstudent`
-      );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-
-      const transformedData = data.students.map((student: any) => ({
+      const response = await getAllStudentApi();
+      if (response.data) {
+        const studentData:StudentsResponse = response.data;
+        const transformedData = studentData.students.map((student: any) => ({
         id: student._id,
         Name: student.Name,
         Department: student.Department,
         grade: student.grade,
         status: student.status || "Active",
-        courses: student.courses.map((course: string, index: number) => ({
+        courses: student.courses.map((course: string, index: string) => ({
           id: index,
           name: course,
         })),
       }));
-
       setStudents(transformedData);
+      }
+      
     } catch (error) {
       setError(
         error instanceof Error ? error.message : "An unknown error occurred."
@@ -93,32 +100,18 @@ const StudentDashboard: React.FC = () => {
   const confirmDelete = async (id: string) => {
     if (id) {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_PUBLIC_URL}student/deletestudent/${id}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.ok) {
-          setStudents((prev) => prev.filter((student) => student.id !== id));
-        } else {
-          const errorData = await response.json();
-          setError(errorData.message || "Failed to delete student.");
-        }
+        const response = await deleteStudent(id).unwrap();
+        setStudents((prev) => prev.filter((student) => student.id !== id));
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An unknown error occurred."
+          error instanceof Error ? error.message : "Failed to delete student."
         );
       }
     }
-
     setIsDeleteConfirmOpen(false);
     setSelectedStudent(null);
   };
+  
 
   const sortedStudents = [...students].sort((a, b) => {
     const modifier = sortDirection === "asc" ? 1 : -1;

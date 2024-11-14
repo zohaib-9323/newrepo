@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useUpdateStudentMutation } from '../../../Services/studentapi';
+import { useLazyGetAllCoursesQuery } from '../../../Services/courseapi';
 
-interface Course {
+interface StudentCourse {
   id: string;  
   name: string;
 }
@@ -11,7 +13,7 @@ interface Student {
   Department: string;
   grade: string;
   status: 'Active' | 'Inactive';
-  courses: Course[]; 
+  courses: StudentCourse[]; 
 }
 
 interface EditStudentModalProps {
@@ -29,9 +31,11 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
 }) => {
   const [editStudent, setEditStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<StudentCourse[]>([]);
   const [selectedCourseNames, setSelectedCourseNames] = useState<string[]>([]); 
   const [gradeError, setGradeError] = useState<string>('');
+  const [updateStudent] = useUpdateStudentMutation();
+  const [getAllCoursesApi,{isLoading,isError}]=useLazyGetAllCoursesQuery()
 
   useEffect(() => {
     if (isOpen && student) {
@@ -44,18 +48,19 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
   }, [isOpen, student]);
 
   const fetchAvailableCourses = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch courses');
+    try{
+      const response = await getAllCoursesApi();
+      if (response.data) {
+        const coursesData: StudentCourse[] = response.data.courses.map(course => ({ id: course._id, name: course.name }));
+        setAvailableCourses(coursesData);
+        console.log(coursesData);
       }
-      const data = await response.json();
-      setAvailableCourses(data.courses || []);
     } catch (error) {
-      console.error('Error fetching courses:', error);
-      alert('Failed to load available courses');
+          console.error('Error fetching courses:', error);
+          alert('Failed to load available courses');
     }
   };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (!editStudent) return;
@@ -104,6 +109,7 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
     }
 
     const studentToUpdate = {
+      id: editStudent.id,
       Name,
       grade,
       Department,
@@ -113,20 +119,10 @@ const EditStudentModal: React.FC<EditStudentModalProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}student/updatestudent/${editStudent.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(studentToUpdate),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update student');
+      const response = await updateStudent(studentToUpdate).unwrap();
+      if (response.message){
+        alert('Student details updated successfully!');
       }
-
-      await response.json();
-      alert('Student details updated successfully!');
       fetchStudents();
       onClose();
     } catch (error) {

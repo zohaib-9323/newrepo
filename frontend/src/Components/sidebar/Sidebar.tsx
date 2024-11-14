@@ -11,11 +11,11 @@ import {
 import { Link } from "react-router-dom";
 
 interface SidebarProps {
-  user: { firstName: string };
+ 
   onLogout: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const sidebarLinks = [
