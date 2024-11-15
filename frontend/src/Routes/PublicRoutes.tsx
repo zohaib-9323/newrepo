@@ -4,29 +4,7 @@ import SignUpPage from "../Components/pages/SignUp/Signup";
 import ForgotPasswordPage from "../Components/pages/Fogotpassword/Forgotpassword";
 import { Routes, Route, Navigate,useNavigate } from 'react-router-dom';
 
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
 const PublicRoutes: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const navigate = useNavigate();
-
-  const handleSignUp = (
-    firstName: string,
-    lastName: string,
-    email: string,
-    password: string
-  ) => {
-    const newUser = { firstName, lastName, email, password };
-    const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
-    localStorage.setItem("currentUser", JSON.stringify({ email, password }));
-    window.dispatchEvent(new Event('authChange'));
-    navigate('/');
-  };
 
   return (
     <div>
@@ -37,7 +15,7 @@ const PublicRoutes: React.FC = () => {
         />
         <Route
           path="/signup"
-          element={<SignUpPage onSignUp={handleSignUp} />}
+          element={<SignUpPage />}
         />
         <Route
           path="/forgot-password"

@@ -1,20 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAddStudentMutation } from '../../../Services/studentapi';
 import { useLazyGetAllCoursesQuery } from '../../../Services/courseapi';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 
 interface AddStudentModalProps {
   isOpen: boolean;
   onClose: () => void;
   fetchStudents: () => void;
-}
-
-interface Student {
-  id: string;
-  Name: string;
-  Department: string;
-  grade: string;
-  status: 'Active' | 'Inactive';
-  courses: string[]; 
 }
 
 interface Course {
@@ -25,19 +18,10 @@ interface Course {
 }
 
 const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetchStudents }) => {
-  const [newStudent, setNewStudent] = useState<Omit<Student, 'id'>>({
-    Name: '',
-    grade: '',
-    Department: '',
-    status: 'Active',
-    courses: [],
-  });
-  const [loading, setLoading] = useState(false);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [courseError, setCourseError] = useState<string>('');
-  const [gradeError, setGradeError] = useState<string>('');
   const [addStudent] = useAddStudentMutation();
-  const [getAllCoursesApi,{isLoading,isError}]=useLazyGetAllCoursesQuery()
+  const [getAllCoursesApi] = useLazyGetAllCoursesQuery();
+
   useEffect(() => {
     if (isOpen) {
       fetchAvailableCourses();
@@ -45,97 +29,54 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
   }, [isOpen]);
 
   const fetchAvailableCourses = async () => {
-    try{
+    try {
       const response = await getAllCoursesApi();
       if (response.data) {
-        const coursesData: Course[] = response.data?.courses || [];
-        setAvailableCourses(coursesData);
-        console.log(coursesData);
+        setAvailableCourses(response.data.courses || []);
       }
     } catch (error) {
-          console.error('Error fetching courses:', error);
-          alert('Failed to load available courses');
+      console.error('Error fetching courses:', error);
+      alert('Failed to load available courses');
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewStudent((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const initialValues = {
+    Name: '',
+    grade: '',
+    Department: '',
+    status: 'Active',
+    courses: [] as string[],
   };
 
-  const handleCourseSelection = (course: Course) => {
-    setNewStudent((prev) => {
-      const isSelected = prev.courses.includes(course.name);
-      let updatedCourses;
+  const validationSchema = Yup.object({
+    Name: Yup.string().required('Name is required'),
+    grade: Yup.string()
+      .required('Grade is required')
+      .matches(
+        /^[A-F]([+-])?$/i,
+        'Grade must be one of the following: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, E, E+, E-, F, F+.'
+      ),
+    Department: Yup.string().required('Department is required'),
+    courses: Yup.array()
+      .of(Yup.string())
+      .min(1, 'Select at least one course')
+      .max(3, 'You can select up to 3 courses'),
+  });
 
-      if (isSelected) {
-        updatedCourses = prev.courses.filter(name => name !== course.name);
-      } else {
-        if (prev.courses.length >= 3) {
-          setCourseError('You can select a maximum of 3 courses.');
-          return prev;
-        }
-        updatedCourses = [...prev.courses, course.name];
-      }
-
-      setCourseError('');
-      return {
-        ...prev,
-        courses: updatedCourses,
-      };
-    });
-  };
-
-
-  const validateGrade = (grade: string) => {
-    const validGrades = ['A', 'B', 'C', 'D', 'E', 'F'];
-    const validWithModifiers = validGrades.map(g => [g, `${g}+`, `${g}-`]).flat();
-
-    if (!validWithModifiers.includes(grade.toUpperCase())) {
-      setGradeError('Grade must be one of the following: A, A+, A-, B, B+, B-, C, C+, C-, D, D+, D-, E, E+, E-, F, F+.');
-      return false;
-    }
-
-    setGradeError('');
-    return true;
-  };
-
-  const handleAddStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { Name, grade, Department, courses } = newStudent;
-    if (!Name || !grade || !Department || courses.length === 0) {
-      alert('Please fill in all required fields and select at least one course.');
-      return;
-    }
-    if (!validateGrade(grade)) {
-      return; 
-    }
-    const studentToAdd = {
-      Name,
-      grade,
-      Department,
-      courses, 
-      status: newStudent.status,
-    };
-  
+  const handleSubmit = async (values: typeof initialValues, { setSubmitting, resetForm }: any) => {
     try {
-      setLoading(true);
-      await addStudent(studentToAdd).unwrap();
+      await addStudent(values).unwrap();
       alert('Student added successfully!');
-      fetchStudents(); 
-      setNewStudent({ Name: '', grade: '', Department: '', status: 'Active', courses: [] }); 
-      onClose(); 
+      fetchStudents();
+      resetForm();
+      onClose();
     } catch (error) {
       console.error('Failed to add student:', error);
       alert('Failed to add student. Please try again.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
-  
 
   if (!isOpen) return null;
 
@@ -148,99 +89,101 @@ const AddStudentModal: React.FC<AddStudentModalProps> = ({ isOpen, onClose, fetc
             ✕
           </button>
         </div>
-        <form onSubmit={handleAddStudent} className="space-y-4">
-          <input
-            name="Name"
-            type="text"
-            placeholder="Enter student name"
-            value={newStudent.Name}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-          <input
-            name="grade"
-            type="text"
-            placeholder="Enter student grade"
-            value={newStudent.grade}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-          {gradeError && <p className="text-red-500 text-sm">{gradeError}</p>}
-          <input
-            name="Department"
-            type="text"
-            placeholder="Enter student department"
-            value={newStudent.Department}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-          <select
-            name="status"
-            value={newStudent.status}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-          >
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ values, isSubmitting, setFieldValue }) => (
+            <Form className="space-y-4">
+              <div>
+                <Field
+                  name="Name"
+                  type="text"
+                  placeholder="Enter student name"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                <ErrorMessage name="Name" component="div" className="text-red-500 text-sm" />
+              </div>
 
-          <div className="space-y-2">
-            <label className="block font-medium">
-              Select Courses ({newStudent.courses.length}/3):
-            </label>
-            <div className="max-h-40 overflow-y-auto border rounded p-2">
-              {availableCourses.map((course) => (
-                <div key={course._id} className="flex items-center space-x-2 py-1">
-                  <input
-                    type="checkbox"
-                    id={course._id}
-                    checked={newStudent.courses.includes(course.name)}
-                    onChange={() => handleCourseSelection(course)}
-                    className="rounded"
-                  />
-                  <label htmlFor={course._id} className="flex-1">
-                    <span className="font-medium">{course.name}</span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      ({course.institute} - ${course.price})
-                    </span>
-                  </label>
+              <div>
+                <Field
+                  name="grade"
+                  type="text"
+                  placeholder="Enter student grade"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                <ErrorMessage name="grade" component="div" className="text-red-500 text-sm" />
+              </div>
+
+              <div>
+                <Field
+                  name="Department"
+                  type="text"
+                  placeholder="Enter student department"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                <ErrorMessage name="Department" component="div" className="text-red-500 text-sm" />
+              </div>
+
+              <div>
+                <Field as="select" name="status" className="w-full px-3 py-2 border rounded">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </Field>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-medium">
+                  Select Courses ({values.courses.length}/3):
+                </label>
+                <div className="max-h-40 overflow-y-auto border rounded p-2">
+                  {availableCourses.map((course) => (
+                    <div key={course._id} className="flex items-center space-x-2 py-1">
+                      <input
+                        type="checkbox"
+                        id={course._id}
+                        checked={values.courses.includes(course.name)}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          const updatedCourses = isChecked
+                            ? [...values.courses, course.name]
+                            : values.courses.filter((name) => name !== course.name);
+                          setFieldValue('courses', updatedCourses);
+                        }}
+                        className="rounded"
+                      />
+                      <label htmlFor={course._id} className="flex-1">
+                        <span className="font-medium">{course.name}</span>
+                        <span className="text-sm text-gray-500 ml-2">
+                          ({course.institute} - ${course.price})
+                        </span>
+                      </label>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            {courseError && <p className="text-red-500 text-sm">{courseError}</p>}
-          </div>
+                <ErrorMessage name="courses" component="div" className="text-red-500 text-sm" />
+              </div>
 
-          <div className="space-y-2">
-            <label className="block font-medium">Selected Courses:</label>
-            <div className="text-sm text-gray-600">
-              {newStudent.courses.map((courseName, index) => (
-                <div key={index}>
-                  {index + 1}. {courseName}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex space-x-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-              disabled={loading || newStudent.courses.length > 3}
-            >
-              {loading ? 'Adding...' : 'Add Student'}
-            </button>
-          </div>
-        </form>
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Adding...' : 'Add Student'}
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );

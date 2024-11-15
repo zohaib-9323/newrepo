@@ -61,48 +61,6 @@ const HomePage = () => {
   const [getCourseApi]=useLazyGetAllCoursesQuery();
   const [getStudentApi]=useLazyGetAllStudentsQuery();
   const [getTeacherApi]=useLazyGetAllTeachersQuery();
-
-
-  // useEffect(() => {
-  //   const fetchAllData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const [teachersRes, studentsRes, coursesRes] = await Promise.all([
-         
-  //         getTeacherApi(),
-  //         getStudentApi(),
-  //         getCourseApi(),
-  //          fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/getteachers`),
-  //         fetch(`${process.env.REACT_APP_PUBLIC_URL}student/getstudent`),
-  //         fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`),
-
-  //       ]);
-
-  //       // const teachersData = await teachersRes.json();
-  //       // const studentsData = await studentsRes.json();
-  //       // const coursesData = await coursesRes.json();
-  //       const teachersData = teachersRes.data;
-  //       const studentsData = studentsRes.data;
-  //       const coursesData = coursesRes.data;
-
-  //       console.log("asasasa", studentsData, coursesData,teachersData)
-  //       setStats({
-  //         teachers: teachersData.teachers || [],
-  //         students: studentsData.students || [],
-  //         courses: coursesData.courses || [],
-  //       });
-  //     } catch (err) {
-  //       setError("Failed to fetch dashboard data");
-  //       console.error(err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchAllData();
-  // }, []);
-
-
  
   useEffect(() => {
     const fetchAllData = async () => {

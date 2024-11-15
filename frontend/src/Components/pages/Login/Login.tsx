@@ -8,7 +8,7 @@ import { useLoginMutation } from "../../../Services/auth";
 const LoginPage: React.FC = ({}) => {
   const [showPassword, setShowPassword] = React.useState(false);
   const navigate = useNavigate();
-  const [login, { isLoading, isError }] = useLoginMutation();
+  const [loginapi, { isLoading, isError }] = useLoginMutation();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -21,28 +21,26 @@ const LoginPage: React.FC = ({}) => {
     password: Yup.string().required("Please fill in your password"),
   });
 
-  const handleLogin = (email: string, password: string) => {
-    const userData = { email, password };
-    localStorage.setItem("currentUser", JSON.stringify(userData));
-    window.dispatchEvent(new Event("authChange"));
-    navigate("/");
-  };
-
   const handleSubmit = async (
     values: { email: string; password: string },
     { setSubmitting, setFieldError }: any
   ) => {
-
     try {
-      const result = await login(values).unwrap();
+      const result = await loginapi(values).unwrap();
       console.log("Results", result.success);
-      handleLogin(values.email, values.password);
+      const userData = { email: values.email, password: values.password };
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+      if(result.success) {
+        window.dispatchEvent(new Event("authChange"));
+        navigate("/");
+      }
     } catch (error) {
       setFieldError("password", "Invalid email or password");
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
