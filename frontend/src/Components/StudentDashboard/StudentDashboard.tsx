@@ -1,70 +1,50 @@
 import React, { useState, useEffect } from "react";
 import {
-  ArrowDown,
-  ArrowUp,
   Search,
   UserPlus,
   Trash2,
   Edit2,
 } from "lucide-react";
-import AddStudentModal from "./Student/AddStudent";
-import EditStudentModal from "./Student/EditStudentModal";
-import DeleteConfirmationModal from "./Student/DeleteConfirmmationModal";
+import AddStudentModal from "../Student/AddStudent/AddStudent";
+import EditStudentModal from "../Student/EditStudent/EditStudentModal";
+import DeleteConfirmationModal from "../DeleteConfirmation/DeleteConfirmmationModal";
+import { useLazyGetAllStudentsQuery, useDeleteStudentMutation } from "../../redux/api/EmptySplit";
+import { Student, StudentsResponse } from "../../utils/interfaces";
+import { toast } from "react-toastify";
+import {text as Texts,messageText} from "../../utils/constants";
 
-interface Course {
-  id: string;
-  name: string;
-}
-
-interface Student {
-  id: string;
-  Name: string;
-  Department: string;
-  grade: string;
-  status: "Active" | "Inactive";
-  courses: Course[];
-}
-
-const StudentDashboard: React.FC = () => {
+const StudentDashboard: React.FC = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<keyof Student>("Name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [students, setStudents] = useState<Student[]>([]);
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
+  const [getAllStudentApi] = useLazyGetAllStudentsQuery();
+  const [deleteStudent] = useDeleteStudentMutation();
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (): Promise<void> => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_PUBLIC_URL}student/getstudent`
-      );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      const response = await getAllStudentApi();
+      if (response.data) {
+        const studentData: StudentsResponse = response.data;
+        const transformedData = studentData.students.map((student: any) => ({
+          id: student._id,
+          Name: student.Name,
+          Department: student.Department,
+          grade: student.grade,
+          status: student.status || "Active",
+          courses: student.courses.map((course: string, index: string) => ({
+            id: index,
+            name: course,
+          })),
+        }));
+        setStudents(transformedData);
       }
-      const data = await response.json();
-
-      const transformedData = data.students.map((student: any) => ({
-        id: student._id,
-        Name: student.Name,
-        Department: student.Department,
-        grade: student.grade,
-        status: student.status || "Active",
-        courses: student.courses.map((course: string, index: number) => ({
-          id: index,
-          name: course,
-        })),
-      }));
-
-      setStudents(transformedData);
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "An unknown error occurred."
-      );
-    } finally {
+    } catch (error) {} 
+    finally {
       setLoading(false);
     }
   };
@@ -73,62 +53,35 @@ const StudentDashboard: React.FC = () => {
     fetchStudents();
   }, []);
 
-  const handleSort = (field: keyof Student) => {
-    if (field === sortField) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
   const handleEditClick = (student: Student) => {
     setSelectedStudent(student);
     setIsEditModalOpen(true);
   };
+
   const handleRemoveStudent = (id: string) => {
     setSelectedStudent(students.find((student) => student.id === id) || null);
     setIsDeleteConfirmOpen(true);
   };
-  const confirmDelete = async (id: string) => {
+
+  const confirmDelete = async (id: string): Promise<void> => {
     if (id) {
       try {
-        const response = await fetch(
-          `${process.env.REACT_APP_PUBLIC_URL}student/deletestudent/${id}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.ok) {
-          setStudents((prev) => prev.filter((student) => student.id !== id));
+        const response = await deleteStudent(id)
+        setStudents((prev) => prev.filter((student) => student.id !== id));
+        if(response.data?.success) {
+          toast.success("Student deleted successfully.");
         } else {
-          const errorData = await response.json();
-          setError(errorData.message || "Failed to delete student.");
+          toast.error(" Failed to delete student.");
         }
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred."
-        );
-      }
-    }
 
+      } catch (error) {}
+    }
     setIsDeleteConfirmOpen(false);
     setSelectedStudent(null);
   };
 
-  const sortedStudents = [...students].sort((a, b) => {
-    const modifier = sortDirection === "asc" ? 1 : -1;
-    if (a[sortField] < b[sortField]) return -1 * modifier;
-    if (a[sortField] > b[sortField]) return 1 * modifier;
-    return 0;
-  });
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div>{Texts.Loading}</div>;
+  if (error) return <div>{Texts.error} {error}</div>;
 
   return (
     <>
@@ -148,7 +101,7 @@ const StudentDashboard: React.FC = () => {
           className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-colors"
         >
           <UserPlus className="w-5 h-5" />
-          Add New Student
+          {Texts.addNewStudent}
         </button>
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -156,39 +109,28 @@ const StudentDashboard: React.FC = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th
-                  className="px-6 py-3 text-left text-sm font-medium text-gray-500 cursor-pointer"
-                  onClick={() => handleSort("Name")}
-                >
-                  <div className="flex items-center gap-2">
-                    Name
-                    {sortField === "Name" &&
-                      (sortDirection === "asc" ? (
-                        <ArrowUp className="w-4 h-4" />
-                      ) : (
-                        <ArrowDown className="w-4 h-4" />
-                      ))}
-                  </div>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
+                  {Texts.name}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                  Grade
+                  {Texts.grade}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                  Department
+                  {Texts.department}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                  Courses
+                  {Texts.courses}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                  Status
+                  {Texts.status}
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">
-                  Actions
+                  {Texts.Actions}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {sortedStudents
+              {students
                 .filter(
                   (student) =>
                     student.Name.toLowerCase().includes(
@@ -214,7 +156,7 @@ const StudentDashboard: React.FC = () => {
                         student.courses.map((course) => course.name).join(", ")
                       ) : (
                         <span className="text-gray-500">
-                          No courses assigned
+                           {messageText.noCourses}
                         </span>
                       )}
                     </td>
@@ -266,12 +208,13 @@ const StudentDashboard: React.FC = () => {
         student={selectedStudent}
         fetchStudents={fetchStudents}
       />
+      {isDeleteConfirmOpen &&
       <DeleteConfirmationModal
-        isOpen={isDeleteConfirmOpen}
         onClose={() => setIsDeleteConfirmOpen(false)}
-        onConfirm={() => confirmDelete(selectedStudent?.id || "")}
-        studentName={selectedStudent?.Name || null}
-      />
+        onConfirm={() => confirmDelete(selectedStudent?.id ?? "")}
+        studentName={selectedStudent?.Name ?? null}
+      />}
+      
     </>
   );
 };

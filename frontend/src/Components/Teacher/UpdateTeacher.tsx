@@ -1,24 +1,8 @@
 import React, { useState, useEffect } from 'react';
-
-interface Teacher {
-    id: number | null;
-    name: string;
-    email: string;
-    course: string;
-    charges: string;
-  }
-
-interface Course {
-  _id: string;
-  name: string;
-}
-
-interface UpdateTeacherProps {
-  isOpen: boolean;
-  onClose: () => void;
-  teacher: Teacher | null;
-  fetchTeachers: () => void;
-}
+import { toast } from 'react-toastify'
+import { useLazyGetAllCoursesQuery,useUpdateTeacherMutation } from '../../redux/api/EmptySplit';
+import { Teacher,TeacherCourse,UpdateTeacherProps } from '../../utils/interfaces';
+import {text as Texts,buttonText} from '../../utils/constants';
 
 const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
   isOpen,
@@ -28,8 +12,10 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
 }) => {
   const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [selectedCourseName, setSelectedCourseName] = useState<string>(''); // Single course
+  const [availableCourses, setAvailableCourses] = useState<TeacherCourse[]>([]);
+  const [selectedCourseName, setSelectedCourseName] = useState<string>('');
+  const [getAllCoursesApi,{isLoading,isError}]=useLazyGetAllCoursesQuery()
+  const [updateTeacherApi] = useUpdateTeacherMutation();
 
   useEffect(() => {
     if (isOpen && teacher) {
@@ -39,15 +25,15 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
     }
   }, [isOpen, teacher]);
 
-  const fetchAvailableCourses = async () => {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}course/getcourse`);
-      if (!response.ok) throw new Error('Failed to fetch courses');
-      const data = await response.json();
-      setAvailableCourses(data.courses || []);
+  const fetchAvailableCourses = async ():Promise<void> => {
+    try{
+      const response = await getAllCoursesApi();
+      if (response.data) {
+        const coursesData: TeacherCourse[] = response.data.courses.map(course => ({ id: course._id, name: course.name }));
+        setAvailableCourses(coursesData);
+      }
     } catch (error) {
-      console.error('Error fetching courses:', error);
-      alert('Failed to load available courses');
+          toast.error('Failed to load available courses');
     }
   };
 
@@ -57,16 +43,17 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
     setEditTeacher(prev => prev ? { ...prev, [name]: value } : null);
   };
 
-  const handleSave = async () => {
+  const handleSave = async ():Promise<void> => {
     if (!editTeacher) return;
 
     const { name, email, charges } = editTeacher;
     if (!name || !email || !selectedCourseName) {
-      alert('Please fill in all required fields.');
+      toast('Please fill in all required fields.');
       return;
     }
 
     const teacherToUpdate = {
+      id: editTeacher.id,
       name,
       email,
       course: selectedCourseName,
@@ -75,21 +62,14 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
 
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.REACT_APP_PUBLIC_URL}teacher/updateteachers/${editTeacher.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(teacherToUpdate),
-      });
-
-      if (!response.ok) throw new Error('Failed to update teacher');
-      
-      await response.json();
-      alert('Teacher details updated successfully!');
+      const response = await updateTeacherApi(teacherToUpdate)
+      if(response.data?.message){
+        toast.success('Teacher details updated successfully!');
+      }
       fetchTeachers();
       onClose();
     } catch (error) {
-      console.error('Failed to update teacher:', error);
-      alert('Failed to update teacher. Please try again.');
+      toast.error('Failed to update teacher. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -101,13 +81,13 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-xl w-[500px] max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Edit Teacher</h3>
+          <h3 className="text-lg font-semibold">{Texts.editTeacher}</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{Texts.name}</label>
             <input
               name="name"
               type="text"
@@ -119,7 +99,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{Texts.email}</label>
             <input
               name="email"
               type="email"
@@ -131,16 +111,16 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{Texts.courses}</label>
             <select
               name="course"
               value={selectedCourseName}
               onChange={(e) => setSelectedCourseName(e.target.value)}
               className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select a Course</option>
+              <option value="">{Texts.selectedCourse}</option>
               {availableCourses.map(course => (
-                <option key={course._id} value={course.name}>
+                <option key={course.id} value={course.name}>
                   {course.name}
                 </option>
               ))}
@@ -148,7 +128,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Charges</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{Texts.charges}</label>
             <input
               name="charges"
               type="text"
@@ -165,7 +145,7 @@ const UpdateTeacher: React.FC<UpdateTeacherProps> = ({
               onClick={onClose}
               className="w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400 transition-colors"
             >
-              Cancel
+              {buttonText.cancel}
             </button>
             <button
               type="button"
