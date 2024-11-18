@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Sidebar from "../Components/sidebar/Sidebar";
-import HomePage from "../Components/sidebar/Home";
-import StudentDashboard from "../Components/sidebar/StudentDashboard";
-import CoursesManagement from "../Components/sidebar/CourseManagement";
-import TeacherManagement from "../Components/sidebar/Teachers";
-import PublicRoutes from "./PublicRoutes";
+import HomePage from "../Components/Home/Home";
+import StudentDashboard from "../Components/StudentDashboard/StudentDashboard";
+import CoursesManagement from "../Components/CourseDashboard/CourseManagement";
+import TeacherManagement from "../Components/TeacherDashboard/Teachers";
 const PrivateRoutes: React.FC = () => {
   const navigate = useNavigate();
 

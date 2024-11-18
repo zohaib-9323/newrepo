@@ -9,11 +9,9 @@ import {
   LogOut,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SidebarProps } from "../../utils/interfaces";
+import {text as Texts,buttonText} from "../../utils/constants"
 
-interface SidebarProps {
- 
-  onLogout: () => void;
-}
 
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         } md:translate-x-0`}
       >
         <div className="p-6 text-2xl font-bold border-b border-gray-700">
-          My App
+          {Texts.myApp}
         </div>
 
         <nav className="mt-10">
@@ -77,7 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
             onClick={onLogout}
             className="mt-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center"
           >
-            <LogOut className="w-5 h-5 mr-2" /> <span>Logout</span>
+            <LogOut className="w-5 h-5 mr-2" /> <span>{buttonText.logout}</span>
           </button>
         </div>
       </div>
